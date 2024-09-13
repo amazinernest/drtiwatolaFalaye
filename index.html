@@ -1,0 +1,459 @@
+<html><head>
+<script type="text/javascript">
+/***********************************************
+* Ultimate Fade-In Slideshow (v1.51): © Dynamic Drive (http://www.dynamicdrive.com)
+* This notice MUST stay intact for legal use
+* Visit http://www.dynamicdrive.com/ for this script and 100s more.
+***********************************************/
+ 
+var fadeimages=new Array()
+//SET IMAGE PATHS. Extend or contract array as needed
+fadeimages[0]=["images/pic -10  b2.jpg", "", ""] //plain image syntax
+fadeimages[1]=["images/pic-10.jpg", "", ""] //image with link syntax
+fadeimages[2]=["images/pic-10 c.jpg", "", "_new"] //image with link and target syntaxfadeimages[0]=["photo1.jpg", "", ""] //plain image syntax
+fadeimages[3]=["images/pic -10  b.jpg", "", ""]
+
+var fadebgcolor=""
+
+////NO need to edit beyond here/////////////
+ 
+var fadearray=new Array() //array to cache fadeshow instances
+var fadeclear=new Array() //array to cache corresponding clearinterval pointers
+ 
+var dom=(document.getElementById) //modern dom browsers
+var iebrowser=document.all
+ 
+function fadeshow(theimages, fadewidth, fadeheight, borderwidth, delay, pause, displayorder){
+this.pausecheck=pause
+this.mouseovercheck=0
+this.delay=delay
+this.degree=10 //initial opacity degree (10%)
+this.curimageindex=0
+this.nextimageindex=1
+fadearray[fadearray.length]=this
+this.slideshowid=fadearray.length-1
+this.canvasbase="canvas"+this.slideshowid
+this.curcanvas=this.canvasbase+"_0"
+if (typeof displayorder!="undefined")
+theimages.sort(function() {return 0.5 - Math.random();}) //thanks to Mike (aka Mwinter) :)
+this.theimages=theimages
+this.imageborder=parseInt(borderwidth)
+this.postimages=new Array() //preload images
+for (p=0;p<theimages.length;p++){
+this.postimages[p]=new Image()
+this.postimages[p].src=theimages[p][0]
+}
+ 
+var fadewidth=fadewidth+this.imageborder*2
+var fadeheight=fadeheight+this.imageborder*2
+ 
+if (iebrowser&&dom||dom) //if IE5+ or modern browsers (ie: Firefox)
+document.write('<div id="master'+this.slideshowid+'" style="position:relative;width:'+fadewidth+'px;height:'+fadeheight+'px;overflow:hidden;"><div id="'+this.canvasbase+'_0" style="position:absolute;width:'+fadewidth+'px;height:'+fadeheight+'px;top:0;left:0;filter:progid:DXImageTransform.Microsoft.alpha(opacity=10);opacity:0.1;-moz-opacity:0.1;-khtml-opacity:0.1;background-color:'+fadebgcolor+'"></div><div id="'+this.canvasbase+'_1" style="position:absolute;width:'+fadewidth+'px;height:'+fadeheight+'px;top:0;left:0;filter:progid:DXImageTransform.Microsoft.alpha(opacity=10);opacity:0.1;-moz-opacity:0.1;-khtml-opacity:0.1;background-color:'+fadebgcolor+'"></div></div>')
+else
+document.write('<div><img name="defaultslide'+this.slideshowid+'" src="'+this.postimages[0].src+'"></div>')
+ 
+if (iebrowser&&dom||dom) //if IE5+ or modern browsers such as Firefox
+this.startit()
+else{
+this.curimageindex++
+setInterval("fadearray["+this.slideshowid+"].rotateimage()", this.delay)
+}
+}
+
+function fadepic(obj){
+if (obj.degree<100){
+obj.degree+=10
+if (obj.tempobj.filters&&obj.tempobj.filters[0]){
+if (typeof obj.tempobj.filters[0].opacity=="number") //if IE6+
+obj.tempobj.filters[0].opacity=obj.degree
+else //else if IE5.5-
+obj.tempobj.style.filter="alpha(opacity="+obj.degree+")"
+}
+else if (obj.tempobj.style.MozOpacity)
+obj.tempobj.style.MozOpacity=obj.degree/101
+else if (obj.tempobj.style.KhtmlOpacity)
+obj.tempobj.style.KhtmlOpacity=obj.degree/100
+else if (obj.tempobj.style.opacity&&!obj.tempobj.filters)
+obj.tempobj.style.opacity=obj.degree/101
+}
+else{
+clearInterval(fadeclear[obj.slideshowid])
+obj.nextcanvas=(obj.curcanvas==obj.canvasbase+"_0")? obj.canvasbase+"_0" : obj.canvasbase+"_1"
+obj.tempobj=iebrowser? iebrowser[obj.nextcanvas] : document.getElementById(obj.nextcanvas)
+obj.populateslide(obj.tempobj, obj.nextimageindex)
+obj.nextimageindex=(obj.nextimageindex<obj.postimages.length-1)? obj.nextimageindex+1 : 0
+setTimeout("fadearray["+obj.slideshowid+"].rotateimage()", obj.delay)
+}
+}
+ 
+fadeshow.prototype.populateslide=function(picobj, picindex){
+var slideHTML=""
+if (this.theimages[picindex][1]!="") //if associated link exists for image
+slideHTML='<a href="'+this.theimages[picindex][1]+'" target="'+this.theimages[picindex][2]+'">'
+slideHTML+='<img src="'+this.postimages[picindex].src+'" border="'+this.imageborder+'px">'
+if (this.theimages[picindex][1]!="") //if associated link exists for image
+slideHTML+='</a>'
+picobj.innerHTML=slideHTML
+}
+ 
+ 
+fadeshow.prototype.rotateimage=function(){
+if (this.pausecheck==1) //if pause onMouseover enabled, cache object
+var cacheobj=this
+if (this.mouseovercheck==1)
+setTimeout(function(){cacheobj.rotateimage()}, 100)
+else if (iebrowser&&dom||dom){
+this.resetit()
+var crossobj=this.tempobj=iebrowser? iebrowser[this.curcanvas] : document.getElementById(this.curcanvas)
+crossobj.style.zIndex++
+fadeclear[this.slideshowid]=setInterval("fadepic(fadearray["+this.slideshowid+"])",50)
+this.curcanvas=(this.curcanvas==this.canvasbase+"_0")? this.canvasbase+"_1" : this.canvasbase+"_0"
+}
+else{
+var ns4imgobj=document.images['defaultslide'+this.slideshowid]
+ns4imgobj.src=this.postimages[this.curimageindex].src
+}
+this.curimageindex=(this.curimageindex<this.postimages.length-1)? this.curimageindex+1 : 0
+}
+ 
+fadeshow.prototype.resetit=function(){
+this.degree=10
+var crossobj=iebrowser? iebrowser[this.curcanvas] : document.getElementById(this.curcanvas)
+if (crossobj.filters&&crossobj.filters[0]){
+if (typeof crossobj.filters[0].opacity=="number") //if IE6+
+crossobj.filters(0).opacity=this.degree
+else //else if IE5.5-
+crossobj.style.filter="alpha(opacity="+this.degree+")"
+}
+else if (crossobj.style.MozOpacity)
+crossobj.style.MozOpacity=this.degree/101
+else if (crossobj.style.KhtmlOpacity)
+crossobj.style.KhtmlOpacity=this.degree/100
+else if (crossobj.style.opacity&&!crossobj.filters)
+crossobj.style.opacity=this.degree/101
+}
+ 
+ 
+fadeshow.prototype.startit=function(){
+var crossobj=iebrowser? iebrowser[this.curcanvas] : document.getElementById(this.curcanvas)
+this.populateslide(crossobj, this.curimageindex)
+if (this.pausecheck==1){ //IF SLIDESHOW SHOULD PAUSE ONMOUSEOVER
+var cacheobj=this
+var crossobjcontainer=iebrowser? iebrowser["master"+this.slideshowid] : document.getElementById("master"+this.slideshowid)
+crossobjcontainer.onmouseover=function(){cacheobj.mouseovercheck=1}
+crossobjcontainer.onmouseout=function(){cacheobj.mouseovercheck=0}
+}
+this.rotateimage()
+}
+function MM_jumpMenu(targ,selObj,restore){ //v3.0
+  eval(targ+".location='"+selObj.options[selObj.selectedIndex].value+"'");
+  if (restore) selObj.selectedIndex=0;
+}
+</script>
+
+
+
+
+
+<title>Dr. Tiwatola Falaye</title>
+<style type="text/css">
+<!--
+a:link {
+	color: #B30303;
+	text-decoration: none;
+}
+a:visited {
+	text-decoration: none;
+}
+a:hover {
+	text-decoration: none;
+}
+a:active {
+	text-decoration: none;
+}
+.style27 {color: #000000}
+-->
+</style>
+<title>Dr. Tiwatola Falaye</title>
+
+<style type="text/css">
+<!--
+body,td,th {
+	font-family: verdana;
+	font-size: 10px;
+	color: 818181;
+	line-height:14px;
+}
+a {
+	font-family: verdana;
+	font-size: 10px;
+	color: 537F17;
+	text-decoration:none;
+}
+img{
+	border:0;
+}
+.style1 {color: #56A72E}
+body {
+	background-color: #B30303;
+}
+.style82 {
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	color: #FFFFFF;
+}
+.style82 {	color: #B92D0F;
+	font-weight: bold;
+}
+.style83 {color: #B30303}
+.style84 {color: #B00404}
+.style86 {color: #333333}
+-->
+</style></head>
+<body leftmargin="0" topmargin="0" marginwidth="0" marginheight="0" rightmargin="0" bottommargin="0" style="PADDING-TOP: 10px">
+<center>
+<table width="743" border="0" cellspacing="0" cellpadding="0">
+<tbody><tr><td><img height="14" src="images/up-1.jpg" width="743"></td></tr>
+<tr>
+    <td width="743" height="100%" bordercolor="#89ADBD" background="images/back-up-1.jpg" bgcolor="#84A8B8" style="PADDING-RIGHT: 14px; PADDING-LEFT: 14px; PADDING-BOTTOM: 14px; PADDING-TOP: 1px">
+		<table height="100%" border="0" cellspacing="0" cellpadding="0">
+		<tbody><tr>
+			<td width="727" valign="top">
+				<table width="727" height="110" border="0" cellpadding="0" cellspacing="0">
+			  <tbody><tr>
+						<td width="717"><img src="images/header.jpg" width="722" height="115"></td>
+				  <td width="10">�&nbsp;</td>
+				  </tr>
+				</tbody></table>
+			</td>
+		</tr>
+		<tr>
+			<td height="100%" valign="top" bgcolor="#8EAFC0">
+			  <table width="718" height="100%" border="0" cellspacing="0" cellpadding="0">
+				<tbody><tr>
+				  <td width="146" height="100%" valign="top" background="images/back-1.jpg" style="BACKGROUND-POSITION: 50% top; BACKGROUND-REPEAT: no-repeat">
+				    <div style=" padding-left:45px;padding-top:24px;line-height:16px">
+				      <h1 class="style83"><font style="font-size:10px"><strong><a href="index.html"><span class="style27">»</span><span class="style83">Home Info.</span></a> <a href="index.html"><span class="style27">»»</span></a><a href="index-1.html"><span class="style27">»</span></a><a href="index-1.html" style="text-decoration:none">About Us</a><br>
+                            <a href="index-4.html"><span class="style86">»</span>My Gallery</a><br>
+                            <a href="index-2.html"><span class="style86">»</span><span class="style84">AcademicWork</span></a><br>
+                            <a href="index-3.html"><span class="style86">»</span>Church<span class="style83">Work</span></a><br>
+                            <a href="https://www.facebook.com/tiwatola.falaye"><span class="style86">»</span>Contacts<span class="style86">»</span> <span class="style86">»</span> &gt;&gt;facebook </a></strong></font></h1>
+				    </div>
+				  <p>�&nbsp;</p></td>
+					
+			  <td width="572" height="100%" valign="top">
+				  <table width="544" border="0" cellspacing="0" cellpadding="0">
+					  <tbody><tr><td align="right"><table width="544" border="0">
+                          <tbody><tr>
+                            <td>
+							<script type="text/javascript">
+/***********************************************
+* Ultimate Fade-In Slideshow (v1.51): © Dynamic Drive (http://www.dynamicdrive.com)
+* This notice MUST stay intact for legal use
+* Visit http://www.dynamicdrive.com/ for this script and 100s more.
+***********************************************/
+ 
+var fadeimages=new Array()
+//SET IMAGE PATHS. Extend or contract array as needed
+fadeimages[0]=["images/pic-10.jpg", "", ""] //plain image syntax
+fadeimages[1]=["images/pic-10 c.jpg", "", ""] //image with link syntax
+fadeimages[2]=["images/pic -10  b.jpg", "", "_new"] //image with link and target syntaxfadeimages[0]=["photo1.jpg", "", ""] //plain image syntax
+
+var fadebgcolor=""
+
+////NO need to edit beyond here/////////////
+ 
+var fadearray=new Array() //array to cache fadeshow instances
+var fadeclear=new Array() //array to cache corresponding clearinterval pointers
+ 
+var dom=(document.getElementById) //modern dom browsers
+var iebrowser=document.all
+ 
+function fadeshow(theimages, fadewidth, fadeheight, borderwidth, delay, pause, displayorder){
+this.pausecheck=pause
+this.mouseovercheck=0
+this.delay=delay
+this.degree=10 //initial opacity degree (10%)
+this.curimageindex=0
+this.nextimageindex=1
+fadearray[fadearray.length]=this
+this.slideshowid=fadearray.length-1
+this.canvasbase="canvas"+this.slideshowid
+this.curcanvas=this.canvasbase+"_0"
+if (typeof displayorder!="undefined")
+theimages.sort(function() {return 0.5 - Math.random();}) //thanks to Mike (aka Mwinter) :)
+this.theimages=theimages
+this.imageborder=parseInt(borderwidth)
+this.postimages=new Array() //preload images
+for (p=0;p<theimages.length;p++){
+this.postimages[p]=new Image()
+this.postimages[p].src=theimages[p][0]
+}
+ 
+var fadewidth=fadewidth+this.imageborder*2
+var fadeheight=fadeheight+this.imageborder*2
+ 
+if (iebrowser&&dom||dom) //if IE5+ or modern browsers (ie: Firefox)
+document.write('<div id="master'+this.slideshowid+'" style="position:relative;width:'+fadewidth+'px;height:'+fadeheight+'px;overflow:hidden;"><div id="'+this.canvasbase+'_0" style="position:absolute;width:'+fadewidth+'px;height:'+fadeheight+'px;top:0;left:0;filter:progid:DXImageTransform.Microsoft.alpha(opacity=10);opacity:0.1;-moz-opacity:0.1;-khtml-opacity:0.1;background-color:'+fadebgcolor+'"></div><div id="'+this.canvasbase+'_1" style="position:absolute;width:'+fadewidth+'px;height:'+fadeheight+'px;top:0;left:0;filter:progid:DXImageTransform.Microsoft.alpha(opacity=10);opacity:0.1;-moz-opacity:0.1;-khtml-opacity:0.1;background-color:'+fadebgcolor+'"></div></div>')
+else
+document.write('<div><img name="defaultslide'+this.slideshowid+'" src="'+this.postimages[0].src+'"></div>')
+ 
+if (iebrowser&&dom||dom) //if IE5+ or modern browsers such as Firefox
+this.startit()
+else{
+this.curimageindex++
+setInterval("fadearray["+this.slideshowid+"].rotateimage()", this.delay)
+}
+}
+
+function fadepic(obj){
+if (obj.degree<100){
+obj.degree+=10
+if (obj.tempobj.filters&&obj.tempobj.filters[0]){
+if (typeof obj.tempobj.filters[0].opacity=="number") //if IE6+
+obj.tempobj.filters[0].opacity=obj.degree
+else //else if IE5.5-
+obj.tempobj.style.filter="alpha(opacity="+obj.degree+")"
+}
+else if (obj.tempobj.style.MozOpacity)
+obj.tempobj.style.MozOpacity=obj.degree/101
+else if (obj.tempobj.style.KhtmlOpacity)
+obj.tempobj.style.KhtmlOpacity=obj.degree/100
+else if (obj.tempobj.style.opacity&&!obj.tempobj.filters)
+obj.tempobj.style.opacity=obj.degree/101
+}
+else{
+clearInterval(fadeclear[obj.slideshowid])
+obj.nextcanvas=(obj.curcanvas==obj.canvasbase+"_0")? obj.canvasbase+"_0" : obj.canvasbase+"_1"
+obj.tempobj=iebrowser? iebrowser[obj.nextcanvas] : document.getElementById(obj.nextcanvas)
+obj.populateslide(obj.tempobj, obj.nextimageindex)
+obj.nextimageindex=(obj.nextimageindex<obj.postimages.length-1)? obj.nextimageindex+1 : 0
+setTimeout("fadearray["+obj.slideshowid+"].rotateimage()", obj.delay)
+}
+}
+ 
+fadeshow.prototype.populateslide=function(picobj, picindex){
+var slideHTML=""
+if (this.theimages[picindex][1]!="") //if associated link exists for image
+slideHTML='<a href="'+this.theimages[picindex][1]+'" target="'+this.theimages[picindex][2]+'">'
+slideHTML+='<img src="'+this.postimages[picindex].src+'" border="'+this.imageborder+'px">'
+if (this.theimages[picindex][1]!="") //if associated link exists for image
+slideHTML+='</a>'
+picobj.innerHTML=slideHTML
+}
+ 
+ 
+fadeshow.prototype.rotateimage=function(){
+if (this.pausecheck==1) //if pause onMouseover enabled, cache object
+var cacheobj=this
+if (this.mouseovercheck==1)
+setTimeout(function(){cacheobj.rotateimage()}, 100)
+else if (iebrowser&&dom||dom){
+this.resetit()
+var crossobj=this.tempobj=iebrowser? iebrowser[this.curcanvas] : document.getElementById(this.curcanvas)
+crossobj.style.zIndex++
+fadeclear[this.slideshowid]=setInterval("fadepic(fadearray["+this.slideshowid+"])",50)
+this.curcanvas=(this.curcanvas==this.canvasbase+"_0")? this.canvasbase+"_1" : this.canvasbase+"_0"
+}
+else{
+var ns4imgobj=document.images['defaultslide'+this.slideshowid]
+ns4imgobj.src=this.postimages[this.curimageindex].src
+}
+this.curimageindex=(this.curimageindex<this.postimages.length-1)? this.curimageindex+1 : 0
+}
+ 
+fadeshow.prototype.resetit=function(){
+this.degree=10
+var crossobj=iebrowser? iebrowser[this.curcanvas] : document.getElementById(this.curcanvas)
+if (crossobj.filters&&crossobj.filters[0]){
+if (typeof crossobj.filters[0].opacity=="number") //if IE6+
+crossobj.filters(0).opacity=this.degree
+else //else if IE5.5-
+crossobj.style.filter="alpha(opacity="+this.degree+")"
+}
+else if (crossobj.style.MozOpacity)
+crossobj.style.MozOpacity=this.degree/101
+else if (crossobj.style.KhtmlOpacity)
+crossobj.style.KhtmlOpacity=this.degree/100
+else if (crossobj.style.opacity&&!crossobj.filters)
+crossobj.style.opacity=this.degree/101
+}
+ 
+ 
+fadeshow.prototype.startit=function(){
+var crossobj=iebrowser? iebrowser[this.curcanvas] : document.getElementById(this.curcanvas)
+this.populateslide(crossobj, this.curimageindex)
+if (this.pausecheck==1){ //IF SLIDESHOW SHOULD PAUSE ONMOUSEOVER
+var cacheobj=this
+var crossobjcontainer=iebrowser? iebrowser["master"+this.slideshowid] : document.getElementById("master"+this.slideshowid)
+crossobjcontainer.onmouseover=function(){cacheobj.mouseovercheck=1}
+crossobjcontainer.onmouseout=function(){cacheobj.mouseovercheck=0}
+}
+this.rotateimage()
+}
+function MM_jumpMenu(targ,selObj,restore){ //v3.0
+  eval(targ+".location='"+selObj.options[selObj.selectedIndex].value+"'");
+  if (restore) selObj.selectedIndex=0;
+}
+</script></td>
+                          </tr>
+                        </tbody></table></td>
+					  </tr>
+						<tr>
+							<td width="544" valign="top" style="PADDING-BOTTOM: 12px; PADDING-TOP: 13px"><table width="544" height="100%" border="0" cellpadding="0" cellspacing="0"><tbody><tr><td height="100%" valign="top"><table width="544" height="100%" border="0" cellpadding="0" cellspacing="0">
+                              <tbody><tr>
+                                <td height="100%" valign="top"><table width="544" height="100%" border="0" align="left" cellpadding="0" cellspacing="0" bordercolor="#FFFFFF" background="images/back-end-2.jpg" style="BACKGROUND-POSITION: right top; BACKGROUND-REPEAT: repeat-y">
+                                    <tbody><tr>
+                                      <td width="544" valign="top" style="PADDING-TOP: 0px"><table width="542" border="0" align="left" bordercolor="#FFFFFF">
+                                          <tbody><tr>
+                                            <td><script type="text/javascript">
+//new fadeshow(IMAGES_ARRAY_NAME, slideshow_width 536, slideshow_height 153, borderwidth, delay, pause (0=no, 1=yes), optionalRandomOrder)
+new fadeshow(fadeimages,544,144, 0, 2000, 1, "R")
+                            </script><div id="master0" style="position:relative;width:544px;height:144px;overflow:hidden;"><div id="canvas0_0" style="position: absolute; width: 544px; height: 144px; top: 0px; left: 0px; opacity: 0.990099; z-index: 1;"><img src="images/pic-10.jpg" border="0px"></div><div id="canvas0_1" style="position:absolute;width:544px;height:144px;top:0;left:0;filter:progid:DXImageTransform.Microsoft.alpha(opacity=10);opacity:0.1;-moz-opacity:0.1;-khtml-opacity:0.1;background-color:"><img src="images/pic-10%20c.jpg" border="0px"></div></div>
+                                              �&nbsp;</td>
+                                          </tr>
+                                        </tbody></table>
+                                          <div style="PADDING-RIGHT: 15px; PADDING-LEFT: 0px; PADDING-BOTTOM: 19px; PADDING-TOP: 7px">
+                                            <p><img style="MARGIN-RIGHT: 15px" height="113" src="images/pic-1.gif" width="108" align="left"><span class="style1"><span class="style82">Welcome to this website</span></span></p>
+                                            <p><span class="style27">I am Revd Cannon Dr. Tiwatola  Abidemi Falaye a senior lecturer in the Department of Religious Studies in  Olabisi Onabanjo University Ago-Iwoye Ogun State, Nigeria. I am also a clergy man in Ibadan  North Diocese, Anglican Communion. This website is a way to carry out part of my  personal and academic philosophy of free and open access.<br>
+                                              Dr. Tiwatola Abidemi Falaye was born to the       family of Late Pa Jonathn Adebiyi Falaye  and Madam Janet       Oluwakemi Adetutu Falaye on the 16th of september 1959 in Owo, Ondo state       Nigeria. He attended St Andrews Primary School Owo, Ondo state Nigeria       from 1965 to 1970. He also attended St. Patricks College Oka, Ondo State Nigeria. From there he       proceeded to Baptist Acedemy Lagos for A level or H.S.C. between 1977 and       1979. He was the Senior Prefect in 1979. For University education Dr.       Tiwatola Falaye attended the University        of Ibadan from 1980       to 1983. He graduated with a B.A. Honours in Religious Studies. He       proceeded for the masters degree in 1984 and graduated in 1986       specialising in Philosophy of Religion in the same University. Dr Tiwatola       Falaye started the Ph.D programme in the University of Ibadan       in 1993 and completed successfuly in the year 2005</span></p>
+                                          </div></td>
+                                    </tr>
+                                    <tr>
+                                      <td><img height="3" src="images/end-2.jpg" width="544"></td>
+                                    </tr>
+                                    <tr>
+                                      <td height="100%" valign="top" style="PADDING-BOTTOM: 19px; PADDING-TOP: 0px"><strong style="COLOR: #9cc149">»</strong> <strong style="COLOR: #b92d0f">Thinking Globally.</strong>
+                                          <div style="PADDING-RIGHT: 10px; PADDING-LEFT: 0px; PADDING-BOTTOM: 10px; LINE-HEIGHT: 12px; PADDING-TOP: 10px">
+                                            <p><span class="style27">I am <img style="MARGIN-TOP: 5px; MARGIN-RIGHT: 15px" height="87" src="images/pic-2.jpg" width="109" align="left"> currently searching for  opportunities for lecturing and research in the field of Religious Studies. I am also  interested in sabbalical appointment, seminars and workshop all over the world in the same area. Please</span> <span class="style27"><a href="index-6.html" title="Contact">contact me</a> if you  have an opportunity in mind in which my skills may be helpful.</span></p>
+                                            <p class="style27"><strong><a href="https://www.facebook.com/tiwatola.falaye"><img src="images/facebook_col.png" width="40" height="40">Follow us on facebook </a></strong></p>
+                                          </div></td>
+                                    </tr>
+                                    <tr>
+                                      <td><img height="3" src="images/end-2.jpg" width="544"></td>
+                                    </tr>
+                                </tbody></table></td>
+                              </tr>
+                            </tbody></table>							  <table width="544" height="100%" border="0" align="left" cellpadding="0" cellspacing="0" bordercolor="#FFFFFF" background="images/back-end-2.jpg" style="BACKGROUND-POSITION: right top; BACKGROUND-REPEAT: repeat-y">
+							</table>							  </td>
+								</tr>
+						  </tbody></table>						  </td>
+					  </tr>						
+				  </tbody></table>				  </td>
+				</tr>
+				</tbody></table>
+			</td>
+		</tr>
+		<tr>
+			<td background="images/back-end-3.jpg" style="PADDING-RIGHT: 25px; BACKGROUND-POSITION: 50% top; PADDING-BOTTOM: 1px; PADDING-TOP: 18px; BACKGROUND-REPEAT: no-repeat" align="right">
+				<font style="FONT-SIZE: 10px">
+					|<strong style="COLOR: #537f17">R2KG DESIGNER</strong><strong style="COLOR: #000000"></strong> © 2015 |</font></td>
+		</tr>
+		</tbody></table>
+	</td>
+</tr>
+<tr><td><img height="11" src="images/end-1.jpg" width="743"></td></tr>
+</tbody></table>
+</center>
+
+</body></html>
